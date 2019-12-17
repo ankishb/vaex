@@ -2062,7 +2062,9 @@ for name in dir(scopes['str']):
             value = method(*args, **kwargs)
             if name in force_string:
                 value = _to_string_column(value.values, force=True)
-            return value
+                return value
+            else:
+                return value.values
         return wrapper
     wrapper = pandas_wrapper()
     wrapper.__doc__ = "Wrapper around pandas.Series.%s" % name
@@ -2121,7 +2123,10 @@ def _astype(x, dtype):
         x = x.to_numpy()
     if isinstance(x, pa.Array):
         x = x.to_pandas().values
-    return x.astype(dtype)
+    y = x.astype(dtype)
+    if vaex.column._is_stringy(y):
+        y = vaex.column._to_string_column(y)
+    return y
 
 
 @register_function(name='isin', on_expression=False)
